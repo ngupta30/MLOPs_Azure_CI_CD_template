@@ -1,0 +1,9 @@
+{
+    "training":
+    {
+        "learning_rate": 0.1,
+        "boosting_type": "gbdt",
+        "objective": "binary",
+        "metric": "auc"
+    }
+}

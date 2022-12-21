@@ -1,0 +1,4 @@
+base:
+  model_name: 'titanic_model.pkl'
+  data_folder: 'titatnic'
+  dataset_name: 'titatnic_dataset'
