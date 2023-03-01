@@ -38,28 +38,28 @@ jobs:
   - task: AzureCLI@2
     displayName: 'INstall Azure ML CLI '
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: az extension add -n azure-cli-ml
   - task: AzureCLI@2
     displayName: create resource group
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: 'az ml workspace create -g $(azureml.resourceGroup) -w $(azureml.workspaceName) -l $(azureml.location) --exist-ok --yes '
   - task: AzureCLI@2
     displayName: Create Azure ML Compute
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: az ml computetarget create amlcompute -g $(azureml.resourceGroup) -w $(azureml.workspaceName) -n $(amlcompute.clusterName) -s $(amlcompute.vmSize) --min-nodes $(amlcompute.minNodes) --max-nodes $(amlcompute.maxNodes) --idle-seconds-before-scaledown $(amlcompute.idleSecondsBeforeScaledown)
   - task: AzureCLI@2
     displayName: 'Upload data repo to Azure blob '
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: az ml datastore upload -w $(azureml.workspaceName) -g $(azureml.resourceGroup) -n $(az ml datastore show-default -w $(azureml.workspaceName) -g $(azureml.resourceGroup) --query name -o tsv) -p data -u titatnic --overwrite true
@@ -71,7 +71,7 @@ jobs:
   - task: AzureCLI@2
     displayName: train model
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: az ml run submit-script -g $(azureml.resourceGroup) -w $(azureml.workspaceName) -e $(experiment.Name) --ct $(amlcompute.clusterName) -d conda_dependencies.yml -c train_config -t ../metadata/run.json train_aml.py
@@ -79,14 +79,14 @@ jobs:
   - task: AzureCLI@2
     displayName: model register
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: az ml model register -g $(azureml.resourceGroup) -w $(azureml.workspaceName) -n $(model.Name) -f metadata/run.json --asset-path outputs/models/titanic_model.pkl -d "Classification model for Survival prediction" --tag "data"="titanic" --tag "model"="classification" --model-framework ScikitLearn -t metadata/model.json
   - task: AzureCLI@2
     displayName: Download model to buildsourcedire
     inputs:
-      connectedServiceNameARM: e443c78d-c543-4e9d-a5aa-c1a36f62255a
+      connectedServiceNameARM: $(AzDoServiceConnectionName)
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: az ml model download -g $(azureml.resourceGroup) -w $(azureml.workspaceName) -i$(jq -r .modelId metadata/model.json) -t ./models --overwrite
